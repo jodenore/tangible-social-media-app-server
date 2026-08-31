@@ -18,6 +18,8 @@ const validateObjectId = require("../middleware/validateObjectId");
 userRouter.get("/", getAllUsers);
 userRouter.get("/:id", validateObjectId("id"), getUserById);
 
+// routes below this require a token
+
 userRouter.use(authMiddleware);
 
 userRouter.post("/", createUser);

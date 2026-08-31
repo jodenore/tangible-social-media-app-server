@@ -3,12 +3,13 @@ const Post = require("../models/Post");
 
 async function getAllPosts(req, res) {
   try {
-    const { search, sport, sortBy } = req.query;
+    const { search, sport, sortBy } = req.query; // read optional filters from the URL
     let posts = await Post.find()
       .populate("author", "username displayName avatar")
       .populate("player", "fullName slug sport position currentTeam image");
-
+    // Populate replaces author/player ObjectIds with readable objects.
     if (sport) {
+      // prevents errors if a post has no linked player
       posts = posts.filter((post) => post?.player?.sport === sport);
     }
 
@@ -107,7 +108,7 @@ async function createPost(req, res) {
   try {
     const post = await Post.create({
       ...req.body,
-      author: req.user._id,
+      author: req.user._id, // use the logged-in user's token id as the author
     });
 
     const populatedPost = await post.populate([
@@ -143,14 +144,14 @@ async function updatePost(req, res) {
         message: "Post not found",
       });
     }
-
+    // TODO: add ownership check so the original owner can only update this post
     if (!post.author.equals(req.user._id)) {
       return res.status(403).json({
         status: "FAILED",
         message: "You can only update your own posts",
       });
     }
-
+    // keep the old value if theres no new value
     post.content = req.body.content ?? post.content;
     post.image = req.body.image ?? post.image;
     post.player = req.body.player ?? post.player;
@@ -196,6 +197,7 @@ async function likePost(req, res) {
       id,
       {
         $addToSet: {
+          // prevents user liking the post twice
           likes: userId,
         },
       },
@@ -244,7 +246,7 @@ async function unlikePost(req, res) {
         message: "Post not found",
       });
     }
-
+    // check if this logged-in user has liked the post before removing the like
     const isLiked = post.likes.some((likeId) => likeId.equals(userId));
 
     if (!isLiked) {
@@ -253,7 +255,7 @@ async function unlikePost(req, res) {
         message: "Post is not liked by this user",
       });
     }
-
+    // Keep every like except the logged in user's id
     post.likes = post.likes.filter((likeId) => !likeId.equals(userId));
     await post.save();
 

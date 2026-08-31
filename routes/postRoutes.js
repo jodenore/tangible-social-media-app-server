@@ -29,8 +29,10 @@ postRouter.get(
 );
 postRouter.get("/:id", validateObjectId("id"), getPostById);
 
-// protected routes
+// every route below this line is protected
 postRouter.use(authMiddleware);
+
+// add CRUD post routes
 
 postRouter.post("/", createPost);
 postRouter.patch("/:id/like", validateObjectId("id"), likePost);

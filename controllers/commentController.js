@@ -84,7 +84,7 @@ async function createComment(req, res) {
   try {
     const comment = await Comment.create({
       ...req.body,
-      author: req.user._id,
+      author: req.user._id, // uses the logged-in users token id as the comment author
     });
 
     const populatedComment = await comment.populate([
@@ -120,7 +120,7 @@ async function updateComment(req, res) {
         message: "Comment not found",
       });
     }
-
+    //  only the original author can update this comment
     if (!comment.author.equals(req.user._id)) {
       return res.status(403).json({
         status: "FAILED",
@@ -170,7 +170,7 @@ async function likeComment(req, res) {
       id,
       {
         $addToSet: {
-          likes: userId,
+          likes: userId, // prevent the same user from liking the comment twice
         },
       },
       {
@@ -228,6 +228,7 @@ async function unlikeComment(req, res) {
       });
     }
 
+    //  Keep every like except the logged-in user's id
     comment.likes = comment.likes.filter((likeId) => !likeId.equals(userId));
     await comment.save();
 

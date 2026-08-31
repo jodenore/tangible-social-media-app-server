@@ -25,6 +25,8 @@ commentRouter.get(
 );
 commentRouter.get("/:id", validateObjectId("id"), getCommentById);
 
+// routes below this require a token
+
 commentRouter.use(authMiddleware);
 
 commentRouter.post("/create", createComment);

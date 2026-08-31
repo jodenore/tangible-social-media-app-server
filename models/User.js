@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema(
         ref: "Player",
       },
     ],
+    groups: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group",
+      },
+    ],
   },
   {
     timestamps: true,

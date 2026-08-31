@@ -17,6 +17,7 @@ playerRouter.get("/random", getRandomPlayer);
 playerRouter.get("/mostviewed", getMostViewedPlayer);
 playerRouter.get("/:id", validateObjectId("id"), getPlayerById);
 
+// routes below this require a token
 playerRouter.use(authMiddleware);
 
 playerRouter.post("/", createPlayer);

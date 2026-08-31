@@ -170,6 +170,7 @@ async function addFavouritePlayer(req, res) {
   try {
     const { id, playerId } = req.params;
 
+    // Make sure users can only edit their own favourite players list
     if (!req.user._id.equals(id)) {
       return res.status(403).json({
         status: "FAILED",
@@ -193,7 +194,7 @@ async function addFavouritePlayer(req, res) {
         message: "User not found",
       });
     }
-
+    // prevent duplicate favourites before increasing faouriteCount
     const alreadyFavourited = user.favouritePlayers.some((favouritePlayerId) =>
       favouritePlayerId.equals(playerId),
     );
@@ -269,6 +270,7 @@ async function removeFavouritePlayer(req, res) {
     );
     await user.save();
 
+    // prevents the favouritesCount from dropping to lower than 0
     player.favouritesCount = Math.max(0, player.favouritesCount - 1);
     await player.save();
 

@@ -97,7 +97,7 @@ async function updateUser(req, res) {
         message: "You can only update your own profile",
       });
     }
-
+    // allowed fields for updating // user cannot update protected fields
     const allowedUpdates = {
       username: req.body.username,
       displayName: req.body.displayName,
@@ -105,6 +105,8 @@ async function updateUser(req, res) {
       avatar: req.body.avatar,
       bio: req.body.bio,
     };
+
+    // remove fields that were not sent so old values stay unchanged
 
     Object.keys(allowedUpdates).forEach((key) => {
       if (allowedUpdates[key] === undefined) {

@@ -15,6 +15,11 @@ const postSchema = new mongoose.Schema(
       ref: "Player",
       default: null,
     },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Group",
+      default: null,
+    },
     content: {
       type: String,
       required: true,
