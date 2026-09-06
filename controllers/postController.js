@@ -1,13 +1,15 @@
 const { default: mongoose } = require("mongoose");
 const Post = require("../models/Post");
+const Group = require("../models/Group");
 
 async function getAllPosts(req, res) {
   try {
     const { search, sport, sortBy } = req.query; // read optional filters from the URL
     let posts = await Post.find()
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image");
-    // Populate replaces author/player ObjectIds with readable objects.
+      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("group", "name slug");
+    // Populate replaces author/player/grpip ObjectIds with readable objects.
     if (sport) {
       // prevents errors if a post has no linked player
       posts = posts.filter((post) => post?.player?.sport === sport);
@@ -47,7 +49,8 @@ async function getPostById(req, res) {
   try {
     const post = await Post.findById(req.params.id)
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image");
+      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("group", "name slug");
 
     if (!post) {
       return res.status(404).json({
@@ -72,7 +75,8 @@ async function fetchPostsByPlayerId(req, res) {
   try {
     const posts = await Post.find({ player: req.params.playerId })
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image");
+      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("group", "name slug");
 
     return res.json({
       status: "SUCCESS",
@@ -90,7 +94,8 @@ async function fetchPostsByAuthorId(req, res) {
   try {
     const posts = await Post.find({ author: req.params.authorId })
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image");
+      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("group", "name slug");
 
     return res.json({
       status: "SUCCESS",
@@ -106,6 +111,25 @@ async function fetchPostsByAuthorId(req, res) {
 
 async function createPost(req, res) {
   try {
+    if (req.body.group) {
+      let foundGroup = await Group.findById(req.body.group);
+      if (!foundGroup) {
+        return res.status(404).json({
+          status: "FAILED",
+          message: "Group not found",
+        });
+      }
+      let isMember = foundGroup.members.some((member) =>
+        member.equals(req.user._id),
+      );
+      if (!isMember) {
+        return res.status(403).json({
+          status: "FAILED",
+          message: "You are not a member of this group",
+        });
+      }
+    }
+
     const post = await Post.create({
       ...req.body,
       author: req.user._id, // use the logged-in user's token id as the author
@@ -119,6 +143,10 @@ async function createPost(req, res) {
       {
         path: "player",
         select: "fullName slug sport position currentTeam image",
+      },
+      {
+        path: "group",
+        select: "name slug",
       },
     ]);
 
@@ -144,7 +172,6 @@ async function updatePost(req, res) {
         message: "Post not found",
       });
     }
-    // TODO: add ownership check so the original owner can only update this post
     if (!post.author.equals(req.user._id)) {
       return res.status(403).json({
         status: "FAILED",
@@ -158,6 +185,8 @@ async function updatePost(req, res) {
 
     await post.save();
 
+    // A post's group is locked after creation, so updatePost does not change post.group.
+
     const updatedPost = await post.populate([
       {
         path: "author",
@@ -166,6 +195,10 @@ async function updatePost(req, res) {
       {
         path: "player",
         select: "fullName slug sport position currentTeam image",
+      },
+      {
+        path: "group",
+        select: "name slug",
       },
     ]);
 
@@ -180,7 +213,6 @@ async function updatePost(req, res) {
     });
   }
 }
-
 async function likePost(req, res) {
   try {
     const userId = req.user._id;
