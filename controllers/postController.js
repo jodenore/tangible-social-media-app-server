@@ -112,16 +112,17 @@ async function fetchPostsByAuthorId(req, res) {
 async function createPost(req, res) {
   try {
     if (req.body.group) {
-      let foundGroup = await Group.findById(req.body.group);
+      const foundGroup = await Group.findById(req.body.group);
       if (!foundGroup) {
         return res.status(404).json({
           status: "FAILED",
           message: "Group not found",
         });
       }
-      let isMember = foundGroup.members.some((member) =>
-        member.equals(req.user._id),
+      const isMember = foundGroup.members.some((memberId) =>
+        memberId.equals(req.user._id),
       );
+
       if (!isMember) {
         return res.status(403).json({
           status: "FAILED",

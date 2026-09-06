@@ -24,7 +24,12 @@ async function authMiddleware(req, res, next) {
         message: "Not authorized, user not found",
       });
     }
-    req.user = user;
+    // Update authMiddleware so that req.user includes role
+    req.user = {
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+    };
     next();
   } catch (error) {
     return res.status(401).json({
