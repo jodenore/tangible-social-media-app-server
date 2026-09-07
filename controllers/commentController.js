@@ -1,5 +1,19 @@
 const { default: mongoose } = require("mongoose");
 const Comment = require("../models/Comment");
+const Post = require("../models/Post");
+
+async function populateComment(comment) {
+  return comment.populate([
+    {
+      path: "author",
+      select: "username displayName avatar",
+    },
+    {
+      path: "post",
+      select: "content player",
+    },
+  ]);
+}
 
 async function getAllComments(req, res) {
   try {
@@ -48,7 +62,8 @@ async function fetchCommentsByPostId(req, res) {
   try {
     const comments = await Comment.find({ post: req.params.postId })
       .populate("author", "username displayName avatar")
-      .populate("post", "player");
+      .populate("post", "player")
+      .sort({ createdAt: 1 });
 
     return res.json({
       status: "SUCCESS",
@@ -85,6 +100,12 @@ async function createComment(req, res) {
     const comment = await Comment.create({
       ...req.body,
       author: req.user._id, // uses the logged-in users token id as the comment author
+    });
+
+    await Post.findByIdAndUpdate(comment.post, {
+      $inc: {
+        commentsCount: 1,
+      },
     });
 
     const populatedComment = await comment.populate([
@@ -177,7 +198,7 @@ async function likeComment(req, res) {
         new: true,
         runValidators: true,
       },
-    ).populate("likes", "username displayName bio avatar");
+    );
 
     if (!comment) {
       return res.status(404).json({
@@ -186,9 +207,11 @@ async function likeComment(req, res) {
       });
     }
 
+    const populatedComment = await populateComment(comment);
+
     return res.json({
       status: "SUCCESS",
-      data: comment,
+      data: populatedComment,
     });
   } catch (error) {
     return res.status(500).json({
@@ -232,9 +255,11 @@ async function unlikeComment(req, res) {
     comment.likes = comment.likes.filter((likeId) => !likeId.equals(userId));
     await comment.save();
 
+    const populatedComment = await populateComment(comment);
+
     return res.json({
       status: "SUCCESS",
-      data: comment,
+      data: populatedComment,
     });
   } catch (error) {
     return res.status(500).json({

@@ -3,7 +3,10 @@ const bcrypt = require("bcrypt");
 
 async function getAllUsers(req, res) {
   try {
-    const users = await User.find().populate("favouritePlayers");
+    const users = await User.find()
+      .select("-passwordHash")
+      .populate("favouritePlayers")
+      .populate("groups", "name slug description");
     if (!users) {
       return res.status(404).json({
         status: "FAILED",
@@ -24,9 +27,13 @@ async function getAllUsers(req, res) {
 
 async function getUserById(req, res) {
   try {
-    const user = await User.findById(req.params.id).populate(
-      "favouritePlayers",
-    );
+    const user = await User.findById(req.params.id)
+      .select("-passwordHash")
+      .populate(
+        "favouritePlayers",
+        "fullName slug sport position currentTeam image potentialRating",
+      )
+      .populate("groups", "name slug description");
     if (!user) {
       return res.status(404).json({
         status: "FAILED",

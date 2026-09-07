@@ -6,6 +6,7 @@ const {
   updatePost,
   deletePost,
   fetchPostsByAuthorId,
+  fetchPostsByGroupId,
   likePost,
   unlikePost,
 } = require("../controllers/postController");
@@ -26,6 +27,11 @@ postRouter.get(
   "/author/:authorId",
   validateObjectId("authorId"),
   fetchPostsByAuthorId,
+);
+postRouter.get(
+  "/group/:groupId",
+  validateObjectId("groupId"),
+  fetchPostsByGroupId,
 );
 postRouter.get("/:id", validateObjectId("id"), getPostById);
 

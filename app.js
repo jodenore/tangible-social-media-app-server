@@ -8,6 +8,7 @@ const commentRouter = require("./routes/commentRoutes");
 const authRouter = require("./routes/authRoutes");
 const notFoundMiddleware = require("./middleware/notFoundMiddleware");
 const groupRouter = require("./routes/groupRoutes");
+const uploadRouter = require("./routes/uploadRoutes");
 const app = express();
 
 // Body parser
@@ -37,6 +38,7 @@ app.use("/api/users", userRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/groups", groupRouter);
+app.use("/api/uploads", uploadRouter);
 app.use(notFoundMiddleware);
 
 module.exports = app;

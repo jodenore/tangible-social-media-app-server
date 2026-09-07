@@ -1,6 +1,16 @@
 const Player = require("../models/Player");
 const User = require("../models/User");
 
+async function getSafePopulatedUser(userId) {
+  return User.findById(userId)
+    .select("-passwordHash")
+    .populate(
+      "favouritePlayers",
+      "fullName slug sport position currentTeam image potentialRating",
+    )
+    .populate("groups", "name slug description");
+}
+
 async function getAllPlayers(req, res) {
   try {
     const { search, sport, position, sortBy } = req.query;
@@ -25,7 +35,8 @@ async function getAllPlayers(req, res) {
 
     if (position) {
       players = players.filter(
-        (player) => player.position.toLowerCase() === position.toLowerCase(),
+        (player) =>
+          player.position?.toLowerCase() === position.toLowerCase(),
       );
     }
 
@@ -36,6 +47,8 @@ async function getAllPlayers(req, res) {
         players.sort((a, b) => b.views - a.views);
       } else if (sortBy.toLowerCase() === "age") {
         players.sort((a, b) => a.age - b.age);
+      } else if (sortBy.toLowerCase() === "favourites") {
+        players.sort((a, b) => b.favouritesCount - a.favouritesCount);
       }
     }
 
@@ -200,10 +213,15 @@ async function addFavouritePlayer(req, res) {
     );
 
     if (alreadyFavourited) {
+      const populatedUser = await getSafePopulatedUser(id);
+
       return res.json({
         status: "SUCCESS",
         message: "Player already in favourites",
-        data: user,
+        data: {
+          user: populatedUser,
+          player,
+        },
       });
     }
 
@@ -213,10 +231,15 @@ async function addFavouritePlayer(req, res) {
     player.favouritesCount += 1;
     await player.save();
 
+    const populatedUser = await getSafePopulatedUser(id);
+
     res.json({
       status: "SUCCESS",
       message: "Player added to favourites",
-      data: user,
+      data: {
+        user: populatedUser,
+        player,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -274,10 +297,15 @@ async function removeFavouritePlayer(req, res) {
     player.favouritesCount = Math.max(0, player.favouritesCount - 1);
     await player.save();
 
+    const populatedUser = await getSafePopulatedUser(id);
+
     res.json({
       status: "SUCCESS",
       message: "Player removed from favourites",
-      data: user,
+      data: {
+        user: populatedUser,
+        player,
+      },
     });
   } catch (error) {
     return res.status(500).json({

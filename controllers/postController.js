@@ -109,6 +109,26 @@ async function fetchPostsByAuthorId(req, res) {
   }
 }
 
+async function fetchPostsByGroupId(req, res) {
+  try {
+    const posts = await Post.find({ group: req.params.groupId })
+      .sort({ createdAt: -1 })
+      .populate("author", "username displayName avatar")
+      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("group", "name slug");
+
+    return res.json({
+      status: "SUCCESS",
+      data: posts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "FAILED",
+      message: error.message,
+    });
+  }
+}
+
 async function createPost(req, res) {
   try {
     if (req.body.group) {
@@ -247,9 +267,24 @@ async function likePost(req, res) {
       });
     }
 
+    const populatedPost = await post.populate([
+      {
+        path: "author",
+        select: "username displayName avatar",
+      },
+      {
+        path: "player",
+        select: "fullName slug sport position currentTeam image",
+      },
+      {
+        path: "group",
+        select: "name slug",
+      },
+    ]);
+
     return res.json({
       status: "SUCCESS",
-      data: post,
+      data: populatedPost,
     });
   } catch (error) {
     return res.status(500).json({
@@ -292,9 +327,24 @@ async function unlikePost(req, res) {
     post.likes = post.likes.filter((likeId) => !likeId.equals(userId));
     await post.save();
 
+    const populatedPost = await post.populate([
+      {
+        path: "author",
+        select: "username displayName avatar",
+      },
+      {
+        path: "player",
+        select: "fullName slug sport position currentTeam image",
+      },
+      {
+        path: "group",
+        select: "name slug",
+      },
+    ]);
+
     return res.json({
       status: "SUCCESS",
-      data: post,
+      data: populatedPost,
     });
   } catch (error) {
     return res.status(500).json({
@@ -341,6 +391,7 @@ module.exports = {
   getPostById,
   fetchPostsByPlayerId,
   fetchPostsByAuthorId,
+  fetchPostsByGroupId,
   createPost,
   updatePost,
   likePost,

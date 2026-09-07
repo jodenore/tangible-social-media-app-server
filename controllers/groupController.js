@@ -10,7 +10,7 @@ async function getAllGroups(req, res) {
       .populate("pendingMembers", "username displayName avatar")
       .populate(
         "favouritePlayers",
-        "fullNanme slug sport position currentTeam image",
+        "fullName slug sport position currentTeam image",
       );
 
     return res.json({
