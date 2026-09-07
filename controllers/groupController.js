@@ -1,6 +1,7 @@
 const Group = require("../models/Group");
 const Player = require("../models/Player");
 const User = require("../models/User");
+const Post = require("../models/Post");
 
 async function getAllGroups(req, res) {
   try {
@@ -65,7 +66,7 @@ async function createGroup(req, res) {
 
     await User.findByIdAndUpdate(req.user._id, {
       $addToSet: {
-        group: group._id,
+        groups: group._id,
       },
     });
 
@@ -180,6 +181,11 @@ async function deleteGroup(req, res) {
           groups: group._id,
         },
       },
+    );
+
+    await Post.updateMany(
+      { group: group._id },
+      { $set: { group: null } },
     );
 
     await Group.findByIdAndDelete(req.params.id);

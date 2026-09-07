@@ -6,7 +6,7 @@ async function getAllUsers(req, res) {
     const users = await User.find()
       .select("-passwordHash")
       .populate("favouritePlayers")
-      .populate("groups", "name slug description");
+      .populate("groups", "name slug description image");
     if (!users) {
       return res.status(404).json({
         status: "FAILED",
@@ -33,7 +33,7 @@ async function getUserById(req, res) {
         "favouritePlayers",
         "fullName slug sport position currentTeam image potentialRating",
       )
-      .populate("groups", "name slug description");
+      .populate("groups", "name slug description image");
     if (!user) {
       return res.status(404).json({
         status: "FAILED",

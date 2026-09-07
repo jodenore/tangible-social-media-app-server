@@ -22,6 +22,11 @@ const groupSchema = mongoose.Schema(
       default: "",
     },
 
+    image: {
+      type: String,
+      default: "",
+    },
+
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

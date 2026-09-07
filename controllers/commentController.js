@@ -288,6 +288,10 @@ async function deleteComment(req, res) {
     }
 
     await Comment.findByIdAndDelete(req.params.id);
+    await Post.findOneAndUpdate(
+      { _id: comment.post, commentsCount: { $gt: 0 } },
+      { $inc: { commentsCount: -1 } },
+    );
 
     return res.json({
       status: "SUCCESS",

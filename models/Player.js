@@ -41,6 +41,27 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    iconImage: {
+      type: String,
+      default: "",
+    },
+    gallery: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["action", "training", "game", "portrait"],
+          default: "action",
+        },
+        caption: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
 
     bio: {
       type: String,
@@ -73,4 +94,3 @@ const playerSchema = new mongoose.Schema(
 const Player = mongoose.model("Player", playerSchema);
 
 module.exports = Player;
-

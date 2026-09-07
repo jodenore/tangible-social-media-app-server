@@ -6,7 +6,7 @@ async function getSafePopulatedUser(userId) {
     .select("-passwordHash")
     .populate(
       "favouritePlayers",
-      "fullName slug sport position currentTeam image potentialRating",
+      "fullName slug sport position currentTeam image iconImage potentialRating",
     )
     .populate("groups", "name slug description");
 }

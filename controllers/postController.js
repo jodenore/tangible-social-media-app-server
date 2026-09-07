@@ -7,7 +7,7 @@ async function getAllPosts(req, res) {
     const { search, sport, sortBy } = req.query; // read optional filters from the URL
     let posts = await Post.find()
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("player", "fullName slug sport position currentTeam image iconImage")
       .populate("group", "name slug");
     // Populate replaces author/player/grpip ObjectIds with readable objects.
     if (sport) {
@@ -49,7 +49,7 @@ async function getPostById(req, res) {
   try {
     const post = await Post.findById(req.params.id)
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("player", "fullName slug sport position currentTeam image iconImage")
       .populate("group", "name slug");
 
     if (!post) {
@@ -75,7 +75,7 @@ async function fetchPostsByPlayerId(req, res) {
   try {
     const posts = await Post.find({ player: req.params.playerId })
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("player", "fullName slug sport position currentTeam image iconImage")
       .populate("group", "name slug");
 
     return res.json({
@@ -94,7 +94,7 @@ async function fetchPostsByAuthorId(req, res) {
   try {
     const posts = await Post.find({ author: req.params.authorId })
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("player", "fullName slug sport position currentTeam image iconImage")
       .populate("group", "name slug");
 
     return res.json({
@@ -114,7 +114,7 @@ async function fetchPostsByGroupId(req, res) {
     const posts = await Post.find({ group: req.params.groupId })
       .sort({ createdAt: -1 })
       .populate("author", "username displayName avatar")
-      .populate("player", "fullName slug sport position currentTeam image")
+      .populate("player", "fullName slug sport position currentTeam image iconImage")
       .populate("group", "name slug");
 
     return res.json({
@@ -163,7 +163,7 @@ async function createPost(req, res) {
       },
       {
         path: "player",
-        select: "fullName slug sport position currentTeam image",
+        select: "fullName slug sport position currentTeam image iconImage",
       },
       {
         path: "group",
@@ -215,7 +215,7 @@ async function updatePost(req, res) {
       },
       {
         path: "player",
-        select: "fullName slug sport position currentTeam image",
+        select: "fullName slug sport position currentTeam image iconImage",
       },
       {
         path: "group",
@@ -274,7 +274,7 @@ async function likePost(req, res) {
       },
       {
         path: "player",
-        select: "fullName slug sport position currentTeam image",
+        select: "fullName slug sport position currentTeam image iconImage",
       },
       {
         path: "group",
@@ -334,7 +334,7 @@ async function unlikePost(req, res) {
       },
       {
         path: "player",
-        select: "fullName slug sport position currentTeam image",
+        select: "fullName slug sport position currentTeam image iconImage",
       },
       {
         path: "group",
